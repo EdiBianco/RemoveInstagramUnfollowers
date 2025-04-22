@@ -32,7 +32,81 @@ const listOfUsers = //PASTE HERE THE LIST OF USERS FROM YOUR CLIPBOARD, RESULTS 
 8. The last step is copy and paste the code below the variable `listOfUsers`:
 
 ```js
-function getCookie(b){let c=`; ${document.cookie}`,a=c.split(`; ${b}=`);if(2===a.length)return a.pop().split(";").shift()}function sleep(a){return new Promise(b=>{setTimeout(b,a)})}function unfollowUserUrlGenerator(a){return`https://www.instagram.com/web/friendships/${a}/unfollow/`}const csrftoken=getCookie("csrftoken"),startUnfollow=async()=>{let c=Math.floor,a=0,b=0;for(let d of listOfUsers){try{await fetch(unfollowUserUrlGenerator(d.id),{headers:{"content-type":"application/x-www-form-urlencoded","x-csrftoken":csrftoken},method:"POST",mode:"cors",credentials:"include"})}catch(e){console.log(e)}await sleep(c(2e3*Math.random())+4e3),a++,5<= ++b&&(console.log("%c Sleeping 5 minutes to prevent getting temp blocked","background: #222; color: ##FF0000;font-size: 35px;"),b=0,await sleep(3e5)),console.log(`Unfollowed ${a}/${listOfUsers.length}`)}console.log("%c All DONE!","background: #222; color: #bada55;font-size: 25px;")};startUnfollow()
+function getCookie(name) {
+  const value = `; ${document.cookie}`;
+  const parts = value.split(`; ${name}=`);
+  if (parts.length === 2) return parts.pop().split(";").shift();
+}
+
+// basic sleep helper
+function sleep(ms) {
+  return new Promise(resolve => setTimeout(resolve, ms));
+}
+
+// build the unfollow URL
+function unfollowURL(userId) {
+  return `https://www.instagram.com/web/friendships/${userId}/unfollow/`;
+}
+
+const csrftoken   = getCookie("csrftoken");
+const igAppId     = "936619743392459";      // Instagram’s web app ID
+let totalCount    = 0;
+let sinceLastSleep = 0;
+
+(async function startUnfollowing() {
+  for (let user of listOfUsers) {
+    try {
+      // send the POST to unfollow
+      const res = await fetch(unfollowURL(user.id), {
+        method: "POST",
+        credentials: "include",
+        headers: {
+          "accept": "*/*",
+          "accept-language": "en-US,en;q=0.9",
+          "content-type": "application/x-www-form-urlencoded",
+          "x-csrftoken": csrftoken,
+          "x-ig-app-id": igAppId,
+          "x-instagram-ajax": "1",
+          "x-requested-with": "XMLHttpRequest",
+          "referer": "https://www.instagram.com/"
+        },
+        body: `user_id=${user.id}`
+      });
+
+      const json = await res.json();
+      if (!res.ok || json.status !== "ok") {
+        console.warn(`⚠️ Unfollow failed for ${user.username} (${user.id}):`, json);
+      }
+    } catch (err) {
+      console.error(`❌ Error unfollowing ${user.username} (${user.id}):`, err);
+    }
+
+    // increment counters
+    totalCount++;
+    sinceLastSleep++;
+
+    // random delay between 6s–12s
+    await sleep(6000 + Math.random() * 6000);
+
+    // every 15 unfollows, sleep for 300s
+    if (sinceLastSleep >= 15) {
+      console.log(
+        "%c⏸ Sleeping 5 minutes to avoid temp‐block",
+        "background: #FF0000; color: #FFF; font-size:14px;"
+      );
+      sinceLastSleep = 0;
+      await sleep(300_000);
+    }
+
+    console.log(`✅ Unfollowed ${totalCount}/${listOfUsers.length}`);
+  }
+
+  console.log(
+    "%c🎉 All done!",
+    "background: #222; color: #bada55; font-size:16px;"
+  );
+})();
+
 ```
 
 ***Now, this will start unfollowing the users that you selected.***

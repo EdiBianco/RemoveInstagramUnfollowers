@@ -88,14 +88,14 @@ let sinceLastSleep = 0;
     // random delay between 6s–12s
     await sleep(6000 + Math.random() * 6000);
 
-    // every 15 unfollows, sleep for 300s
-    if (sinceLastSleep >= 15) {
+    // every 15 unfollows, sleep for 10 min
+    if (sinceLastSleep >= 16) {
       console.log(
-        "%c⏸ Sleeping 5 minutes to avoid temp‐block",
+        "%c⏸ Sleeping 10 minutes to avoid temp‐block",
         "background: #FF0000; color: #FFF; font-size:14px;"
       );
       sinceLastSleep = 0;
-      await sleep(300_000);
+      await sleep(600_000);
     }
 
     console.log(`✅ Unfollowed ${totalCount}/${listOfUsers.length}`);

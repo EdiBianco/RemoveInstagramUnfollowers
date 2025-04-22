@@ -85,8 +85,8 @@ let sinceLastSleep = 0;
     totalCount++;
     sinceLastSleep++;
 
-    // random delay between 6s–12s
-    await sleep(6000 + Math.random() * 6000);
+    // random delay between 10s–20s
+    await sleep(10000 + Math.random() * 10000);
 
     // every 15 unfollows, sleep for 10 min
     if (sinceLastSleep >= 16) {
